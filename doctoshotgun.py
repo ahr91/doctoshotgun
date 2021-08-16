@@ -14,6 +14,8 @@ import unicodedata
 from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 
+from abc import ABC, abstractmethod
+
 import cloudscraper
 import colorama
 from requests.adapters import ReadTimeout, ConnectionError
@@ -547,6 +549,73 @@ class Doctolib(LoginBrowser):
 
         return self.page.doc['confirmed']
 
+class Vaccine:
+    
+    @staticmethod
+    def addFirstVaccineShot(self, motives):
+        pass
+    
+    @staticmethod
+    def addSecondVaccineShot(self, motives):
+        pass
+    
+    @staticmethod
+    def addThirdVaccineShot(self, motives):
+        pass
+    
+class Pfizer(Vaccine):
+    
+    def addFirstVaccineShot(self, motives):
+        self.motives.append(docto.KEY_PFIZER)
+    
+    def addSecondVaccineShot(self, motives):
+        self.motives.append(docto.KEY_PFIZER_SECOND)
+    
+    def addThirdVaccineShot(self, motives):
+        self.motives.append(docto.KEY_PFIZER_THIRD)
+class Moderna(Vaccine):
+    
+    def addFirstVaccineShot(self, motives):
+        self.motives.append(docto.KEY_MODERNA)
+    
+    def addSecondVaccineShot(self, motives):
+        self.motives.append(docto.KEY_MODERNA_SECOND)
+    
+    def addThirdVaccineShot(self, motives):
+        self.motives.append(docto.KEY_MODERNA_THIRD)
+        
+        
+class Janssen(Vaccine):
+    
+    def addFirstVaccineShot(self, motives):
+        self.motives.append(docto.KEY_JANSSEN)
+    
+    def addSecondVaccineShot(self, motives):
+        #Janssen has no second or third dose
+        pass
+    
+    def addThirdVaccineShot(self, motives):
+        #Janssen has no second or third dose
+        pass
+    
+class ShotNumbers:
+    def __init__(self, Vaccine, motives):
+        self.vaccine = Vaccine
+        self.motives = motives
+
+class FirstShot(ShotNumbers):
+    def __init__(self, Vaccine, motives):
+        super().__init__(Vaccine, motives)
+
+class SecondShot(ShotNumbers):
+    def __init__(self, Vaccine, motives):
+        super().__init__(Vaccine, motives)
+        
+class ThirdShot(ShotNumbers):
+    def __init__(self, Vaccine, motives):
+        super().__init__(Vaccine, motives)
+        
+    
 
 class DoctolibDE(Doctolib):
     BASEURL = 'https://www.doctolib.de'
