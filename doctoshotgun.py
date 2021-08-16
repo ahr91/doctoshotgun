@@ -11,6 +11,8 @@ import argparse
 import getpass
 import unicodedata
 
+from abc import ABCMeta, abstractmethod
+
 from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 
@@ -60,7 +62,7 @@ def log_ts(text=None, *args, **kwargs):
     if text:
         log(text, *args, **kwargs)
 
-
+        
 class Session(cloudscraper.CloudScraper):
     def send(self, *args, **kwargs):
         callback = kwargs.pop('callback', lambda future, response: response)
@@ -212,6 +214,259 @@ class MasterPatientPage(JsonPage):
 
 class CityNotFound(Exception):
     pass
+
+class IArgumentBuilder(metaclass = ABCMeta):
+    "The Argument Builder Interface"
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_debug():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_pfizer():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_moderna():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_janssen():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_astrazeneca():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_onlySecond():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_onlyThird():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_patient():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_timeWindow():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_center():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_centerRegex():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_centerExclude():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_centerExcludeRegex():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_includeNeighborCity():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_startDate():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_endDate():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_dryRun():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_country():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_city():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_username():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_password():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def build_parser_code():
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def get_result():
+        pass
+    
+    
+class ArgumentBuilder(IArgumentBuilder):
+    "Concrete builder for parser"
+    def __init__(self):
+        self.product = Product()
+    
+    def build_parser_debug(self):
+        self.product.parser.add_argument('--debug', '-d', action='store_true',help='show debug information')
+        return self
+    
+    def build_parser_pfizer(self):
+        self.product.parser.add_argument('--pfizer', '-z', action='store_true', help='select only Pfizer vaccine')
+        return self
+    
+    def build_parser_moderna(self):
+        self.product.parser.add_argument('--moderna', '-m', action='store_true', help='select only Moderna vaccine')
+        return self
+    
+    def build_parser_janssen(self):
+        self.product.parser.add_argument('--janssen', '-j', action='store_true', help='select only Janssen vaccine')
+        return self
+    
+    def build_parser_astrazeneca(self):
+        self.product.parser.add_argument('--astrazeneca', '-a', action='store_true', help='select only AstraZeneca vaccine')
+        return self
+    
+    def build_parser_onlySecond(self):
+        self.product.parser.add_argument('--only-second', '-2', action='store_true', help='select only second dose')
+        return self
+    
+    def build_parser_onlyThird(self):
+        self.product.parser.add_argument('--only-third', '-3', action='store_true', help='select only third dose')
+        return self
+    
+    def build_parser_patient(self):
+        self.product.parser.add_argument('--patient', '-p', type=int, default=-1, help='give patient ID')
+        return self
+    
+    def build_parser_timeWindow(self):
+        self.product.parser.add_argument('--time-window', '-t', type=int, default=7, help='set how many next days the script look for slots (default = 7)')
+        return self
+    
+    def build_parser_center(self):
+        self.product.parser.add_argument('--center', '-c', action='append', help='filter centers')
+        return self
+    
+    def build_parser_centerRegex(self):
+        self.product.parser.add_argument('--center-regex', action='append', help='filter centers by regex')
+        return self
+    
+    def build_parser_centerExclude(self):
+        self.product.parser.add_argument('--center-exclude', '-x', action='append', help='exclude centers')
+        return self
+    
+    def build_parser_centerExcludeRegex(self):
+        self.product.parser.add_argument('--center-exclude-regex', action='append', help='exclude centers by regex')
+        return self
+    
+    def build_parser_includeNeighborCity(self):
+        self.product.parser.add_argument('--include-neighbor-city', '-n', action='store_true', help='include neighboring cities')
+        return self
+    
+    def build_parser_startDate(self):
+        self.product.parser.add_argument('--start-date', type=str, default=None, help='first date on which you want to book the first slot (format should be DD/MM/YYYY)')
+        return self
+    
+    def build_parser_endDate(self):
+        self.product.parser.add_argument('--end-date', type=str, default=None, help='last date on which you want to book the first slot (format should be DD/MM/YYYY)')
+        return self
+    
+    def build_parser_dryRun(self):
+        self.product.parser.add_argument('--dry-run', action='store_true', help='do not really book the slot')
+        return self
+    
+    def build_parser_country(self):
+        self.product.parser.add_argument('country', help='country where to book', choices=list(doctolib_map.keys()))
+        return self
+    
+    def build_parser_city(self):
+        self.product.parser.add_argument('city', help='city where to book')
+        return self
+    
+    def build_parser_username(self):
+        self.product.parser.add_argument('username', help='Doctolib username')
+        return self
+    
+    def build_parser_password(self):
+        self.product.parser.add_argument('password', nargs='?', help='Doctolib password')
+        return self
+    
+    def build_parser_code(self):
+        self.product.parser.add_argument('--code', type=str, default=None, help='2FA code')
+        return self
+    
+    def get_result(self):
+        return self.product
+    
+
+class Product():
+    def __init__(self):
+        self.parser = argparse.ArgumentParser(description="Book a vaccine slot on Doctolib")
+        
+class Director:
+    
+    @staticmethod
+    def construct():
+        return ArgumentBuilder()\
+            .build_parser_debug\
+            .build_parser_pfizer\
+            .build_parser_moderna\
+            .build_parser_janssen\
+            .build_parser_astrazeneca\
+            .build_parser_onlySecond\
+            .build_parser_onlyThird\
+            .build_parser_patient\
+            .build_parser_timeWindow\
+            .build_parser_center\
+            .build_parser_centerRegex\
+            .build_parser_centerExclude\
+            .build_parser_centerExcludeRegex\
+            .build_parser_includeNeighborCity\
+            .build_parser_startDate\
+            .build_parser_endDate\
+            .build_parser_dryRun\
+            .build_parser_country\
+            .build_parser_city\
+            .build_parser_username\
+            .build_parser_password\
+            .build_parser_code\
+            .get_result()
+            
+    
+
+
 
 
 class Doctolib(LoginBrowser):
@@ -625,48 +880,8 @@ class Application:
             "de": DoctolibDE
         }
 
-        parser = argparse.ArgumentParser(
-            description="Book a vaccine slot on Doctolib")
-        parser.add_argument('--debug', '-d', action='store_true',
-                            help='show debug information')
-        parser.add_argument('--pfizer', '-z', action='store_true',
-                            help='select only Pfizer vaccine')
-        parser.add_argument('--moderna', '-m', action='store_true',
-                            help='select only Moderna vaccine')
-        parser.add_argument('--janssen', '-j', action='store_true',
-                            help='select only Janssen vaccine')
-        parser.add_argument('--astrazeneca', '-a', action='store_true',
-                            help='select only AstraZeneca vaccine')
-        parser.add_argument('--only-second', '-2',
-                            action='store_true', help='select only second dose')
-        parser.add_argument('--only-third', '-3',
-                            action='store_true', help='select only third dose')
-        parser.add_argument('--patient', '-p', type=int,
-                            default=-1, help='give patient ID')
-        parser.add_argument('--time-window', '-t', type=int, default=7,
-                            help='set how many next days the script look for slots (default = 7)')
-        parser.add_argument(
-            '--center', '-c', action='append', help='filter centers')
-        parser.add_argument('--center-regex',
-                            action='append', help='filter centers by regex')
-        parser.add_argument('--center-exclude', '-x',
-                            action='append', help='exclude centers')
-        parser.add_argument('--center-exclude-regex',
-                            action='append', help='exclude centers by regex')
-        parser.add_argument(
-            '--include-neighbor-city', '-n', action='store_true', help='include neighboring cities')
-        parser.add_argument('--start-date', type=str, default=None,
-                            help='first date on which you want to book the first slot (format should be DD/MM/YYYY)')
-        parser.add_argument('--end-date', type=str, default=None,
-                            help='last date on which you want to book the first slot (format should be DD/MM/YYYY)')
-        parser.add_argument('--dry-run', action='store_true',
-                            help='do not really book the slot')
-        parser.add_argument(
-            'country', help='country where to book', choices=list(doctolib_map.keys()))
-        parser.add_argument('city', help='city where to book')
-        parser.add_argument('username', help='Doctolib username')
-        parser.add_argument('password', nargs='?', help='Doctolib password')
-        parser.add_argument('--code', type=str, default=None, help='2FA code')
+        parser = Director.construct()
+        
         args = parser.parse_args(cli_args if cli_args else sys.argv[1:])
 
         from types import SimpleNamespace
